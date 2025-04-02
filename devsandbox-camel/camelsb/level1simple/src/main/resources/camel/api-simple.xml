@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://camel.apache.org/schema/spring"
+        xsi:schemaLocation="
+            http://camel.apache.org/schema/spring
+            http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+    <!-- MAIN -->
+    <route id="main">
+      <from uri="direct:getDetails"/>
+
+      <!-- REQUEST TRANSFORMATION -->
+      <to uri="direct:json2xml"/>
+
+      <!-- CALL to BACKEND -->
+      <removeHeaders pattern="*"/>
+      <setHeader name="Exchange.HTTP_METHOD">
+        <constant>POST</constant>
+      </setHeader>
+      <setHeader name="Exchange.CONTENT_TYPE">
+        <constant>application/xml</constant>
+      </setHeader>
+      <to uri="http:{{api.backend1.host}}/camel/subscriber/details"/>
+
+      <!-- RESPONSE TRANSFORMATION -->
+      <to uri="direct:xml2json"/>
+    </route>
+
+
+    <route id="json2xml">
+      <from uri="direct:json2xml"/>
+      <convertBodyTo type="String"/>
+      <setHeader name="json">
+        <simple>${body}</simple>
+      </setHeader>
+      <setBody>
+        <constant>&lt;data/&gt;</constant>
+      </setBody>
+      <!-- <log message="json2xml->JSON:\n${header.json}"/> -->
+      <to uri="xslt-saxon:xslt/request.xsl"/>
+      <!-- <log message="json2xml->XML:\n${body}"/> -->
+    </route>
+
+
+    <route id="xml2json">
+      <from uri="direct:xml2json"/>
+      <convertBodyTo type="String"/>
+      <!-- <log message="xml2json->XML:\n${body}"/> -->
+      <to uri="xslt-saxon:xslt/response.xsl"/>
+      <!-- <log message="xml2json->JSON:\n${body}"/> -->
+    </route>
+
+</routes>

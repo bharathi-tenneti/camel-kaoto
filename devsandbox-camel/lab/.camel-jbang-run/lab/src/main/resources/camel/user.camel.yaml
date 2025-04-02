@@ -1,0 +1,23 @@
+- route:
+    id: route-2382
+    from:
+      id: from-1160
+      uri: platform-http
+      parameters:
+        path: /user
+      steps:
+        - removeHeaders:
+            id: removeHeaders-4174
+            pattern: "*"
+        - to:
+            id: to-1037
+            uri: https
+            parameters:
+              httpUri: https://random-data-api.com/api/v2/users?response_type=xml
+        - unmarshal:
+            id: unmarshal-3136
+            jacksonXml: {}
+        - marshal:
+            id: marshal-1159
+            json: {}
+        - log: ${body}
